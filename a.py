@@ -12,16 +12,25 @@ def li():
 is_local = getpass.getuser() == "omotl"
 
 W, D, N = li()
-a = []
+a_list = []
 for d in range(D):
-    a.append(li())
+    a_list.append(li())
 
 # determine rectangles
 rect = [[] for _ in range(D)]
-h = W // N
 for d in range(D):
+    a = a_list[d]
+    a.sort(reverse=True)
+    remain = W
+    upper = 0
     for k in range(N):
-        rect[d].append((k * h, 0, (k + 1) * h, W))
+        h = a[k] // W
+        if a[k] % W != 0:
+            h += 1
+        h = min(h, remain - (N - 1 - k))
+        rect[d].insert(0, (upper, 0, upper + h, W))
+        upper += h
+        remain -= h
 
 # output
 for d in range(D):
