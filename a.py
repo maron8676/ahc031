@@ -18,9 +18,10 @@ for d in range(D):
 
 # determine rectangles
 rect = [[] for _ in range(D)]
+h = W // N
 for d in range(D):
     for k in range(N):
-        rect[d].append((k, 0, k + 1, W))
+        rect[d].append((k * h, 0, (k + 1) * h, W))
 
 # output
 for d in range(D):
