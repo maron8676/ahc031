@@ -76,19 +76,30 @@ rect = [[] for _ in range(D)]
 for d in range(D):
     a = a_list[d]
     a_rev = a[::-1]
-    remain = W
-    upper = 0
+    left = 0
+    up = 0
     for k in range(N):
-        h = a_rev[k] // W
-        if a_rev[k] % W != 0:
-            h += 1
-        h = min(h, remain - (N - 1 - k))
-        if k != N - 1:
-            rect[d].insert(0, (upper, 0, upper + h, W))
+        # print(d, D, k, N, up, left, file=sys.stderr)
+        if (W - up) >= (W - left):
+            h = a_rev[k] // (W - left)
+            if a_rev[k] % (W - left) != 0:
+                h += 1
+            h = min(h, 2 * W - up - left - (N - k), W - up - 1)
+            if k != N - 1:
+                rect[d].insert(0, (up, left, up + h, W))
+            else:
+                rect[d].insert(0, (up, left, W, W))
+            up += h
         else:
-            rect[d].insert(0, (upper, 0, W, W))
-        upper += h
-        remain -= h
+            v = a_rev[k] // (W - up)
+            if a_rev[k] % (W - up) != 0:
+                v += 1
+            v = min(v, 2 * W - up - left - (N - k), W - left - 1)
+            if k != N - 1:
+                rect[d].insert(0, (up, left, W, left + v))
+            else:
+                rect[d].insert(0, (up, left, W, W))
+            left += v
 
 calc_cost(D, N, a_list, rect)
 
