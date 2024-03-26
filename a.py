@@ -80,7 +80,7 @@ for d in range(D):
     up = 0
     for k in range(N):
         # print(d, D, k, N, up, left, file=sys.stderr)
-        if (W - up) >= (W - left):
+        if W - up > 1 and (W - up) - a_rev[k] % (W - up) >= (W - left) - a_rev[k] % (W - left):
             h = a_rev[k] // (W - left)
             if a_rev[k] % (W - left) != 0:
                 h += 1
