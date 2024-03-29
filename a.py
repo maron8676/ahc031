@@ -116,6 +116,8 @@ for d in range(D):
                 rect[d][max_index] = (up, left, up + h, W)
             else:
                 rect[d][max_index] = (up, left, W, W)
+            if k == N - 1:
+                print(a[max_index], (W - up) * (W - left), file=sys.stderr)
             up += h
         else:
             v = a[max_index] // (W - up)
@@ -127,6 +129,8 @@ for d in range(D):
                 rect[d][max_index] = (up, left, W, left + v)
             else:
                 rect[d][max_index] = (up, left, W, W)
+            if k == N - 1:
+                print(a[max_index], (W - up) * (W - left), file=sys.stderr)
             left += v
 
 calc_cost(D, N, a_list, rect)
