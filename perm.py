@@ -37,8 +37,7 @@ def calc_cost(D, N, a_list, rects_list):
         h_set_next = set()
         v_set_next = set()
         rects = rects_list[d]
-        for i in range(N):
-            rect = rects[i]
+        for rect in rects:
             if 0 < rect[0] < W:
                 for i in range(rect[1], rect[3]):
                     h_set_next.add((rect[0] - 1) * W + i)
@@ -72,67 +71,19 @@ a_list = []
 for d in range(D):
     a_list.append(li())
 
-# determine rectangles
-rect = [dict() for _ in range(D)]
+a2_list = []
 for d in range(D):
-    a = a_list[d]
-    left = 0
-    up = 0
+    base = 1
+    max_a = max(a_list[d])
+    while W ** 2 // base // 2 > max_a:
+        base *= 2
 
-    index_set = set(range(N))
-    for k in range(N):
-        min_rem = W
-        max_index = -1
-        direction = ""
+    a2 = []
+    for n in range(N):
+        a = a_list[d][n] // (W // base)
+        if a_list[d][n] % (W // base) > 0:
+            a += 1
+        a2.append(a * (W // base))
+    a2_list.append(a2)
 
-        for index in index_set:
-            rem_h = (W - left) - (a[index] - 1) % (W - left)
-            rem_v = (W - up) - (a[index] - 1) % (W - up)
-
-            rem = 0
-            if W - up > 1 and rem_h < rem_v or W - left == 1:
-                rem = rem_h
-                if min_rem > rem:
-                    min_rem = rem
-                    max_index = index
-                    direction = "h"
-            else:
-                rem = rem_v
-                if min_rem > rem:
-                    max_rem = rem
-                    max_index = index
-                    direction = "v"
-
-        index_set.remove(max_index)
-
-        # print(d, D, k, N, up, left, file=sys.stderr)
-        if direction == "h":
-            h = a[max_index] // (W - left)
-            if a[max_index] % (W - left) != 0:
-                h += 1
-            h = min(h, 2 * W - up - left - (N - k), W - up - 1)
-            # print(h, W - left, a[max_index])
-            if k != N - 1:
-                rect[d][max_index] = (up, left, up + h, W)
-            else:
-                rect[d][max_index] = (up, left, W, W)
-            up += h
-        else:
-            v = a[max_index] // (W - up)
-            if a[max_index] % (W - up) != 0:
-                v += 1
-            v = min(v, 2 * W - up - left - (N - k), W - left - 1)
-            # print(v, W - up, a[max_index])
-            if k != N - 1:
-                rect[d][max_index] = (up, left, W, left + v)
-            else:
-                rect[d][max_index] = (up, left, W, W)
-            left += v
-
-calc_cost(D, N, a_list, rect)
-
-# output
-for d in range(D):
-    for k in range(N):
-        i0, j0, i1, j1 = rect[d][k]
-        print(i0, j0, i1, j1)
+print(max([sum(a2_list[d]) for d in range(D)]), file=sys.stderr)
