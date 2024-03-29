@@ -76,62 +76,108 @@ for d in range(D):
 rect = [dict() for _ in range(D)]
 for d in range(D):
     a = a_list[d]
-    left = 0
-    up = 0
+    before = []
+    if d > 0:
+        before = sorted(list(rect[d - 1].values()), key=lambda x: x[0] + x[1])
 
-    index_set = set(range(N))
-    for k in range(N):
-        min_rem = W
-        max_index = -1
-        direction = ""
+    finish = False
+    max_before_index = N - 1 if d > 0 else -1
+    while not finish:
+        rect[d] = dict()
+        left = 0
+        up = 0
+        satisfy = True
 
-        for index in index_set:
-            rem_h = (W - left) - (a[index] - 1) % (W - left)
-            rem_v = (W - up) - (a[index] - 1) % (W - up)
+        no_change = 0
+        index_set = set(range(N))
+        before_index = 0
+        while before_index <= max_before_index:
+            nearest = W ** 2
+            nearest_index = -1
+            before_rect = before[before_index]
+            area = (before_rect[2] - before_rect[0]) * (before_rect[3] - before_rect[1])
+            for k in index_set:
+                if area >= a[k] and area - a[k] < nearest:
+                    nearest = a[k]
+                    nearest_index = k
 
-            rem = 0
-            if W - up > 1 and rem_h < rem_v or W - left == 1:
-                rem = rem_h
-                if min_rem > rem:
-                    min_rem = rem
-                    max_index = index
-                    direction = "h"
+            if nearest_index == -1:
+                break
+
+            if before[before_index][2] != W:
+                up = before[before_index][2]
+            if before[before_index][3] != W:
+                left = before[before_index][3]
+
+            index_set.remove(nearest_index)
+            rect[d][nearest_index] = before[before_index]
+            before_index += 1
+            no_change += 1
+
+        # print(up, left, file=sys.stderr)
+        for k in range(N - no_change):
+            min_rem = W
+            max_index = -1
+            direction = ""
+
+            for index in index_set:
+                rem_h = (W - left) - (a[index] - 1) % (W - left)
+                rem_v = (W - up) - (a[index] - 1) % (W - up)
+
+                rem = 0
+                if W - up > 1 and rem_h < rem_v or W - left == 1:
+                    rem = rem_h
+                    if min_rem > rem:
+                        min_rem = rem
+                        max_index = index
+                        direction = "h"
+                else:
+                    rem = rem_v
+                    if min_rem > rem:
+                        max_rem = rem
+                        max_index = index
+                        direction = "v"
+
+            index_set.remove(max_index)
+
+            # print(d, D, k, N, up, left, file=sys.stderr)
+            if direction == "h":
+                h = a[max_index] // (W - left)
+                if a[max_index] % (W - left) != 0:
+                    h += 1
+                h = min(h, 2 * W - up - left - (N - k), W - up - 1)
+                # print(h, W - left, a[max_index])
+                if k != N - 1 - no_change:
+                    rect[d][max_index] = (up, left, up + h, W)
+                    if a[max_index] > h * (W - left):
+                        satisfy = False
+                else:
+                    rect[d][max_index] = (up, left, W, W)
+                    # print(a[max_index], (W - up) * (W - left), file=sys.stderr)
+                    if a[max_index] > (W - up) * (W - left):
+                        satisfy = False
+                up += h
             else:
-                rem = rem_v
-                if min_rem > rem:
-                    max_rem = rem
-                    max_index = index
-                    direction = "v"
+                v = a[max_index] // (W - up)
+                if a[max_index] % (W - up) != 0:
+                    v += 1
+                v = min(v, 2 * W - up - left - (N - k), W - left - 1)
+                # print(v, W - up, a[max_index])
+                if k != N - 1 - no_change:
+                    rect[d][max_index] = (up, left, W, left + v)
+                    if a[max_index] > v * (W - up):
+                        satisfy = False
+                else:
+                    rect[d][max_index] = (up, left, W, W)
+                    # print(a[max_index], (W - up) * (W - left), file=sys.stderr)
+                    if a[max_index] > (W - up) * (W - left):
+                        satisfy = False
+                left += v
 
-        index_set.remove(max_index)
-
-        # print(d, D, k, N, up, left, file=sys.stderr)
-        if direction == "h":
-            h = a[max_index] // (W - left)
-            if a[max_index] % (W - left) != 0:
-                h += 1
-            h = min(h, 2 * W - up - left - (N - k), W - up - 1)
-            # print(h, W - left, a[max_index])
-            if k != N - 1:
-                rect[d][max_index] = (up, left, up + h, W)
-            else:
-                rect[d][max_index] = (up, left, W, W)
-            if k == N - 1:
-                print(a[max_index], (W - up) * (W - left), file=sys.stderr)
-            up += h
+        if satisfy or max_before_index == -1:
+            finish = True
         else:
-            v = a[max_index] // (W - up)
-            if a[max_index] % (W - up) != 0:
-                v += 1
-            v = min(v, 2 * W - up - left - (N - k), W - left - 1)
-            # print(v, W - up, a[max_index])
-            if k != N - 1:
-                rect[d][max_index] = (up, left, W, left + v)
-            else:
-                rect[d][max_index] = (up, left, W, W)
-            if k == N - 1:
-                print(a[max_index], (W - up) * (W - left), file=sys.stderr)
-            left += v
+            max_before_index -= 1
 
 calc_cost(D, N, a_list, rect)
 
