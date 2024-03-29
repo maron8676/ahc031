@@ -76,30 +76,37 @@ rect = [[] for _ in range(D)]
 for d in range(D):
     a = a_list[d]
     a_rev = a[::-1]
-    left = 0
-    up = 0
+    area = 0
+    left = [0, 0]
+    up = [0, 0]
     for k in range(N):
         # print(d, D, k, N, up, left, file=sys.stderr)
-        if W - up > 1 and (W - up) - a_rev[k] % (W - up) >= (W - left) - a_rev[k] % (W - left):
-            h = a_rev[k] // (W - left)
-            if a_rev[k] % (W - left) != 0:
+        if W - up[area] > 1 and (W - up[area]) - a_rev[k] % (W - up[area]) >= (W // 2 - left[area]) - a_rev[k] % (
+                W // 2 - left[area]):
+            h = a_rev[k] // (W // 2 - left[area])
+            if a_rev[k] % (W // 2 - left[area]) != 0:
                 h += 1
-            h = min(h, 2 * W - up - left - (N - k), W - up - 1)
+            h = min(h, 2 * W - up[area] - left[area] - (N - k), W - up[area] - 1)
             if k != N - 1:
-                rect[d].insert(0, (up, left, up + h, W))
+                rect[d].insert(0, (up[area], left[area] + W // 2 * area, up[area] + h, W // 2 + W // 2 * area))
             else:
-                rect[d].insert(0, (up, left, W, W))
-            up += h
+                rect[d].insert(0, (up[area], left[area] + W // 2 * area, W, W // 2 + W // 2 * area))
+            up[area] += h
         else:
-            v = a_rev[k] // (W - up)
-            if a_rev[k] % (W - up) != 0:
+            v = a_rev[k] // (W - up[area])
+            if a_rev[k] % (W - up[area]) != 0:
                 v += 1
-            v = min(v, 2 * W - up - left - (N - k), W - left - 1)
+            v = min(v, 2 * W - up[area] - left[area] - (N - k), W // 2 - left[area] - 1)
             if k != N - 1:
-                rect[d].insert(0, (up, left, W, left + v))
+                rect[d].insert(0, (up[area], left[area] + W // 2 * area, W, left[area] + v + W // 2 * area))
             else:
-                rect[d].insert(0, (up, left, W, W))
-            left += v
+                rect[d].insert(0, (up[area], left[area] + W // 2 * area, W, W // 2 + W // 2 * area))
+            left[area] += v
+
+        if (W - up[0]) * (W // 2 - left[0]) >= (W - up[1]) * (W // 2 - left[1]):
+            area = 0
+        else:
+            area = 1
 
 calc_cost(D, N, a_list, rect)
 
