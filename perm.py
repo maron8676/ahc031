@@ -1,4 +1,6 @@
 import getpass
+import math
+import random
 import sys
 from collections import defaultdict
 
@@ -71,19 +73,127 @@ a_list = []
 for d in range(D):
     a_list.append(li())
 
+a_sum_list = []
 a2_list = []
 for d in range(D):
     base = 1
-    max_a = max(a_list[d])
-    while W ** 2 // base // 2 > max_a:
-        base *= 2
-
+    a_sum = 0
     a2 = []
     for n in range(N):
         a = a_list[d][n] // (W // base)
         if a_list[d][n] % (W // base) > 0:
             a += 1
-        a2.append(a * (W // base))
+        a2.append([a * (W // base)])
+        a_sum += a * (W // base)
     a2_list.append(a2)
+    a_sum_list.append(a_sum)
 
-print(max([sum(a2_list[d]) for d in range(D)]), file=sys.stderr)
+print(a2_list)
+
+max_a_list = []
+for n in range(N):
+    max_a = 0
+    for d in range(D):
+        if max_a < sum(a2_list[d][n]):
+            max_a = sum(a2_list[d][n])
+    max_a_list.append(max_a)
+print(max_a_list)
+best_a = a2_list
+best_score = sum(max_a_list)
+best_swap = N * 2
+print(best_score)
+
+# ランダムなdとnを決める
+# 要素があればランダムに1つ取り出す
+for t2 in range(10):
+    a2_list = []
+    for d in range(D):
+        base = 1
+        a_sum = 0
+        a2 = []
+        for n in range(N):
+            a = a_list[d][n] // (W // base)
+            if a_list[d][n] % (W // base) > 0:
+                a += 1
+            a2.append([a * (W // base)])
+            a_sum += a * (W // base)
+        a2_list.append(a2)
+    max_a_list = []
+    for n in range(N):
+        max_a = 0
+        for d in range(D):
+            if max_a < sum(a2_list[d][n]):
+                max_a = sum(a2_list[d][n])
+        max_a_list.append(max_a)
+    print(max_a_list)
+    best_score = sum(max_a_list)
+    print(best_score)
+
+    for t1 in range(1000):
+        i = random.randint(0, N - 1)
+        d = -1
+        sum_max = -1
+        for dd in range(D):
+            if sum_max < sum(a2_list[dd][i]):
+                sum_max = sum(a2_list[dd][i])
+                d = dd
+        if len(a2_list[d][i]) == 0:
+            continue
+        # print(a2_list)
+        j = random.randint(0, N - 1)
+        ope_type = 0
+        if random.random() < 0.8:
+            ope_type = 1
+            index = random.randint(0, len(a2_list[d][i]) - 1)
+            a = a2_list[d][i].pop(index)
+            a2_list[d][j].append(a)
+        else:
+            ope_type = 2
+            a = a2_list[d][i]
+            a2_list[d][i] = a2_list[d][j]
+            a2_list[d][j] = a
+        # print(d, i, j)
+
+        max_a_list = []
+        for n in range(N):
+            max_a = 0
+            for dd in range(D):
+                if max_a < sum(a2_list[dd][n]):
+                    max_a = sum(a2_list[dd][n])
+            max_a_list.append(max_a)
+        # print(a2_list)
+        # print(max_a_list)
+        score = sum(max_a_list)
+        swap_num = 0
+        for n in range(N):
+            for dd in range(D):
+                swap_num += abs(len(a2_list[dd][n]) - 1)
+        # print(score)
+
+        if best_score >= score or math.exp((best_score - score) / (1000 - t1) * 1000) > random.random():
+            print("change", best_score, score)
+            best_score = score
+        else:
+            if ope_type == 1:
+                a = a2_list[d][j].pop()
+                a2_list[d][i].append(a)
+            else:
+                a = a2_list[d][i]
+                a2_list[d][i] = a2_list[d][j]
+                a2_list[d][j] = a
+        if best_score <= W ** 2:
+            if swap_num < best_swap:
+                best_a = a2_list
+            break
+        # print()
+print(best_a)
+max_a_list = []
+for n in range(N):
+    max_a = 0
+    for dd in range(D):
+        if max_a < sum(best_a[dd][n]):
+            max_a = sum(best_a[dd][n])
+    max_a_list.append(max_a)
+print(best_a)
+print(max_a_list)
+print(sum(max_a_list), max(a_sum_list))
