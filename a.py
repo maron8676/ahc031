@@ -241,11 +241,7 @@ while sum([len(a) for a in a_list]) > 0:
         if len(ad) == 0:
             continue
 
-        dp_len = min(19, len(ad) + 1)
-
-        # dp = [[False] * dp_len for _ in range(limit + 1)]
-        # dp[0][0] = True
-
+        dp_len = min(51, len(ad) + 1)
         dp2 = [set() for _ in range(dp_len)]
         dp2[0] = {0}
 
@@ -253,25 +249,14 @@ while sum([len(a) for a in a_list]) > 0:
             aa = ad[i - 1 + (len(ad) + 1 - dp_len)] // size * size
             if ad[i - 1 + (len(ad) + 1 - dp_len)] % size > 0:
                 aa += size
-            # for j in range(limit + 1):
-            #     if dp[j][i - 1]:
-            #         dp[j][i] = True
-            #         if j + aa < limit + 1:
-            #             dp[j + aa][i] = True
             for dp_area in dp2[i - 1]:
                 dp2[i].add(dp_area)
                 dp2[i].add(dp_area + aa)
 
-        dp_sum = 0
-        # for i in range(limit, -1, -1):
-        #     if dp[i][-1]:
-        #         dp_sum = i
-        #         break
         dp2_list = list(dp2[dp_len - 1])
         dp2_list.sort()
-        b_index = bisect.bisect_left(dp2_list, limit)
-        if b_index >= len(dp2_list) or dp2_list[b_index] > limit:
-            b_index -= 1
+        b_index = bisect.bisect_right(dp2_list, limit)
+        b_index -= 1
         dp_sum = dp2_list[b_index]
         # print(dp_sum)
 
@@ -281,9 +266,6 @@ while sum([len(a) for a in a_list]) > 0:
             aa = ad[len(ad) + 1 - dp_len + i - 1] // size * size
             if ad[len(ad) + 1 - dp_len + i - 1] % size > 0:
                 aa += size
-            # if dp_sum - aa >= 0 and dp[dp_sum - aa][i - 1]:
-            #     select_a_list.append(ad[len(ad) + 1 - dp_len + i - 1])
-            #     dp_sum -= aa
             if dp_sum - aa >= 0 and dp_sum - aa in dp2[i - 1]:
                 select_a_list.append(ad[len(ad) + 1 - dp_len + i - 1])
                 dp_sum -= aa
