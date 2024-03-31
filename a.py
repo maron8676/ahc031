@@ -69,8 +69,10 @@ is_local = getpass.getuser() == "omotl"
 
 W, D, N = li()
 a_list = []
+a_list_copy = [[] for _ in range(D)]
 for d in range(D):
     a_list.append(li())
+    a_list_copy[d].extend(a_list[d])
 
 # determine rectangles
 rect = [dict() for _ in range(D)]
@@ -181,8 +183,133 @@ for d in range(D):
 
 calc_cost(D, N, a_list, rect)
 
+rect2 = [[] for _ in range(D)]
+up = 0
+left = 0
+while sum([len(a) for a in a_list]) > 0:
+    max_a = 0
+    max_d = -1
+    max_i = -1
+    for d in range(D):
+        if len(a_list[d]) > 0 and max_a < a_list[d][-1]:
+            max_a = a_list[d][-1]
+            max_d = d
+            max_i = len(a_list[d]) - 1
+
+    a = a_list[max_d]
+    area = a.pop()
+    rem_h = (W - left) - (area - 1) % (W - left)
+    rem_v = (W - up) - (area - 1) % (W - up)
+
+    rem = 0
+    if W - up > 1 and rem_h < rem_v or W - left == 1:
+        rem = rem_h
+        direction = "h"
+    else:
+        rem = rem_v
+        direction = "v"
+
+    size = 0
+    limit = 0
+    if direction == "h":
+        h = area // (W - left)
+        if area % (W - left) != 0:
+            h += 1
+        h = min(h, 2 * W - up - left - len(a) - 1, W - up - 1)
+        rect2[max_d].append((area, up, left, up + h, W))
+
+        size = h
+        limit = (W - left) * h
+    else:
+        v = area // (W - up)
+        if area % (W - up) != 0:
+            v += 1
+        v = min(v, 2 * W - up - left - len(a) - 1, W - left - 1)
+        rect2[max_d].append((area, up, left, W, left + v))
+
+        size = v
+        limit = (W - up) * v
+
+    # 他の日の分を同じ位置に詰める
+    print(limit)
+    print("alist", a_list)
+    for d in range(D):
+        if d == max_d:
+            continue
+        ad = a_list[d]
+
+        dp = [[False] * min(15, len(ad) + 1) for _ in range(limit + 1)]
+        dp[0][0] = True
+
+        for i in range(1, len(dp[0])):
+            aa = ad[i - 1 + (len(ad) + 1 - len(dp[0]))] // size * size
+            if ad[i - 1 + (len(ad) + 1 - len(dp[0]))] % size > 0:
+                aa += size
+            for j in range(limit + 1):
+                if dp[j][i - 1]:
+                    dp[j][i] = True
+                    if j + aa < limit + 1:
+                        dp[j + aa][i] = True
+
+        dp_sum = 0
+        for i in range(limit, -1, -1):
+            if dp[i][-1]:
+                dp_sum = i
+                break
+        print(dp_sum)
+
+        select_a_list = []
+        for i in range(len(dp[0]) - 1, 0, -1):
+            aa = ad[len(ad) + 1 - len(dp[0]) + i - 1] // size * size
+            if ad[len(ad) + 1 - len(dp[0]) + i - 1] % size > 0:
+                aa += size
+            if dp_sum - aa >= 0 and dp[dp_sum - aa][i - 1]:
+                select_a_list.append(ad[len(ad) + 1 - len(dp[0]) + i - 1])
+                dp_sum -= aa
+        print(select_a_list)
+        del_list = []
+        if direction == "h":
+            x = left
+            for select_a in select_a_list:
+                index = ad.index(select_a)
+                del_list.append(index)
+                x_size = select_a // size
+                if select_a % size > 0:
+                    x_size += 1
+                rect2[d].append((select_a, up, x, up + size, x + x_size))
+                x += x_size
+        else:
+            y = up
+            for select_a in select_a_list:
+                index = ad.index(select_a)
+                del_list.append(index)
+                y_size = select_a // size
+                if select_a % size > 0:
+                    y_size += 1
+                rect2[d].append((select_a, y, left, y + y_size, left + size))
+                y += y_size
+        del_list.sort()
+        while len(del_list) > 0:
+            index = del_list.pop()
+            ad.pop(index)
+    if direction == "h":
+        up += size
+    else:
+        left += size
+
 # output
 for d in range(D):
     for k in range(N):
         i0, j0, i1, j1 = rect[d][k]
         print(i0, j0, i1, j1)
+
+print()
+for d in range(D):
+    rect2[d].sort(key=lambda x: x[0])
+    for i in range(N):
+        rect2[d][i] = (rect2[d][i][1], rect2[d][i][2], rect2[d][i][3], rect2[d][i][4])
+
+calc_cost(D, N, a_list_copy, rect2)
+for d in range(D):
+    for i in range(N):
+        print(*rect2[d][i])
