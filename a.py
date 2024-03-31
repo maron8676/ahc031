@@ -187,6 +187,52 @@ rect2 = [[] for _ in range(D)]
 up = 0
 left = 0
 while sum([len(a) for a in a_list]) > 0:
+    # i番目の最大値で埋められるかチェック
+    # 埋められるなら終了
+    max_len = max([len(ai) for ai in a_list])
+
+    # 横に分ける形
+    up_list = []
+    for i in range(max_len):
+        max_h = 0
+        for d in range(D):
+            if len(a_list[d]) - 1 - i >= 0:
+                h = a_list[d][len(a_list[d]) - 1 - i] // (W - left)
+                if a_list[d][len(a_list[d]) - 1 - i] % (W - left) > 0:
+                    h += 1
+                if max_h < h:
+                    max_h = h
+        up_list.append(max_h)
+    if up + sum(up_list) <= W:
+        print("h ok", file=sys.stderr)
+        for i in range(max_len):
+            for d in range(D):
+                if len(a_list[d]) - 1 - i >= 0:
+                    rect2[d].append((a_list[d][len(a_list[d]) - 1 - i], up, left, up + up_list[i], W))
+            up += up_list[i]
+        break
+
+    # 縦に分ける形
+    left_list = []
+    for i in range(max_len):
+        max_v = 0
+        for d in range(D):
+            if len(a_list[d]) - 1 - i >= 0:
+                v = a_list[d][len(a_list[d]) - 1 - i] // (W - up)
+                if a_list[d][len(a_list[d]) - 1 - i] % (W - up) > 0:
+                    v += 1
+                if max_v < v:
+                    max_v = v
+        left_list.append(max_v)
+    if left + sum(left_list) <= W:
+        print("v ok", file=sys.stderr)
+        for i in range(max_len):
+            for d in range(D):
+                if len(a_list[d]) - 1 - i >= 0:
+                    rect2[d].append((a_list[d][len(a_list[d]) - 1 - i], up, left, W, left + left_list[i]))
+            left += left_list[i]
+        break
+
     max_a = 0
     max_d = -1
     max_i = -1
@@ -208,7 +254,6 @@ while sum([len(a) for a in a_list]) > 0:
     else:
         rem = rem_v
         direction = "v"
-    max_len = max([len(ai) for ai in a_list])
 
     size = 0
     limit = 0
