@@ -302,13 +302,7 @@ while sum([len(a) for a in a_list]) > 0:
                 x_size = select_a // size
                 if select_a % size > 0:
                     x_size += 1
-                if a_index == len(select_a_list) - 1:
-                    if len(select_a_list) == len(ad):
-                        rect2[d].append((select_a, up, x, up + size, W))
-                    else:
-                        rect2[d].append((select_a, up, x, up + size, W))
-                else:
-                    rect2[d].append((select_a, up, x, up + size, x + x_size))
+                rect2[d].append((select_a, up, x, up + size, x + x_size))
                 x += x_size
         else:
             y = up
@@ -318,13 +312,7 @@ while sum([len(a) for a in a_list]) > 0:
                 y_size = select_a // size
                 if select_a % size > 0:
                     y_size += 1
-                if a_index == len(select_a_list) - 1:
-                    if len(select_a_list) == len(ad):
-                        rect2[d].append((select_a, y, left, W, left + size))
-                    else:
-                        rect2[d].append((select_a, y, left, W, left + size))
-                else:
-                    rect2[d].append((select_a, y, left, y + y_size, left + size))
+                rect2[d].append((select_a, y, left, y + y_size, left + size))
                 y += y_size
         del_list.sort()
         while len(del_list) > 0:
