@@ -291,8 +291,8 @@ while sum([len(a) for a in a_list]) > 0:
                 rect2[d].append((rem_a, up, left, W, left + rem_v2))
 
         # グループの中の最後と、全体としての最後はWまで伸ばしていい
-        if len(select_a_list) == len(ad):
-            print(select_a_list)
+        # if len(select_a_list) == len(ad):
+        #     print(select_a_list)
         del_list = []
         if direction == "h":
             x = left
