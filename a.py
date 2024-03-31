@@ -217,7 +217,10 @@ while sum([len(a) for a in a_list]) > 0:
         if area % (W - left) != 0:
             h += 1
         h = min(h, 2 * W - up - left - max_len - 1, W - up - 1)
-        rect2[max_d].append((area, up, left, up + h, W))
+        if sum([len(temp_a) for temp_a in a_list]) == 1:
+            rect2[max_d].append((area, up, left, W, W))
+        else:
+            rect2[max_d].append((area, up, left, up + h, W))
 
         size = h
         limit = (W - left) * h
@@ -226,7 +229,10 @@ while sum([len(a) for a in a_list]) > 0:
         if area % (W - up) != 0:
             v += 1
         v = min(v, 2 * W - up - left - max_len - 1, W - left - 1)
-        rect2[max_d].append((area, up, left, W, left + v))
+        if sum([len(temp_a) for temp_a in a_list]) == 1:
+            rect2[max_d].append((area, up, left, W, W))
+        else:
+            rect2[max_d].append((area, up, left, W, left + v))
 
         size = v
         limit = (W - up) * v
@@ -261,7 +267,6 @@ while sum([len(a) for a in a_list]) > 0:
         # print(dp_sum)
 
         select_a_list = []
-        select_a_list2 = []
         for i in range(dp_len - 1, 0, -1):
             aa = ad[len(ad) + 1 - dp_len + i - 1] // size * size
             if ad[len(ad) + 1 - dp_len + i - 1] % size > 0:
@@ -285,26 +290,41 @@ while sum([len(a) for a in a_list]) > 0:
                 rem_v2 = min(rem_v2, 2 * W - up - left - max_len - 1, W - left - 1)
                 rect2[d].append((rem_a, up, left, W, left + rem_v2))
 
+        # グループの中の最後と、全体としての最後はWまで伸ばしていい
+        if len(select_a_list) == len(ad):
+            print(select_a_list)
         del_list = []
         if direction == "h":
             x = left
-            for select_a in select_a_list:
+            for a_index, select_a in enumerate(select_a_list):
                 index = ad.index(select_a)
                 del_list.append(index)
                 x_size = select_a // size
                 if select_a % size > 0:
                     x_size += 1
-                rect2[d].append((select_a, up, x, up + size, x + x_size))
+                if a_index == len(select_a_list) - 1:
+                    if len(select_a_list) == len(ad):
+                        rect2[d].append((select_a, up, x, up + size, W))
+                    else:
+                        rect2[d].append((select_a, up, x, up + size, W))
+                else:
+                    rect2[d].append((select_a, up, x, up + size, x + x_size))
                 x += x_size
         else:
             y = up
-            for select_a in select_a_list:
+            for a_index, select_a in enumerate(select_a_list):
                 index = ad.index(select_a)
                 del_list.append(index)
                 y_size = select_a // size
                 if select_a % size > 0:
                     y_size += 1
-                rect2[d].append((select_a, y, left, y + y_size, left + size))
+                if a_index == len(select_a_list) - 1:
+                    if len(select_a_list) == len(ad):
+                        rect2[d].append((select_a, y, left, W, left + size))
+                    else:
+                        rect2[d].append((select_a, y, left, W, left + size))
+                else:
+                    rect2[d].append((select_a, y, left, y + y_size, left + size))
                 y += y_size
         del_list.sort()
         while len(del_list) > 0:
