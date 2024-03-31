@@ -205,11 +205,38 @@ while sum([len(a) for a in a_list]) > 0:
         up_list.append(max_h)
     if up + sum(up_list) <= W:
         print("h ok", file=sys.stderr)
-        for i in range(max_len):
-            for d in range(D):
+        for d in range(D):
+            limit = 0
+            if len(a_list[d]) < max_len:
+                limit = up_list[len(a_list[d])] * (W - left)
+            move_list = []
+            temp_pop_index_list = []
+            temp_pop_list = []
+            for index, rect2i in enumerate(rect2[d]):
+                if limit >= rect2i[0]:
+                    temp_pop_index_list.append(index)
+            for index in temp_pop_index_list[::-1]:
+                temp_pop_list.append(rect2[d].pop(index))
+            temp_pop_list.sort(key=lambda x: x[0])
+            up_list_index = len(a_list[d])
+            for index in range(len(temp_pop_list) - 1, -1, -1):
+                temp_pop = temp_pop_list[index]
+                if limit > temp_pop[0]:
+                    rect2[d].append((temp_pop[0], up + sum(up_list[0:up_list_index]), left,
+                                     up + sum(up_list[0:up_list_index]) + up_list[up_list_index], W))
+                    up_list_index += 1
+                    move_list.append(temp_pop)
+                    if up_list_index < len(up_list):
+                        limit = up_list[up_list_index] * (W - left)
+                    else:
+                        limit = 0
+                else:
+                    rect2[d].append(temp_pop)
+
+            for i in range(max_len):
                 if len(a_list[d]) - 1 - i >= 0:
-                    rect2[d].append((a_list[d][len(a_list[d]) - 1 - i], up, left, up + up_list[i], W))
-            up += up_list[i]
+                    rect2[d].append((a_list[d][len(a_list[d]) - 1 - i], up + sum(up_list[0:i]), left,
+                                     up + sum(up_list[0:i]) + up_list[i], W))
         break
 
     # 縦に分ける形
@@ -226,11 +253,39 @@ while sum([len(a) for a in a_list]) > 0:
         left_list.append(max_v)
     if left + sum(left_list) <= W:
         print("v ok", file=sys.stderr)
-        for i in range(max_len):
-            for d in range(D):
+        for d in range(D):
+            limit = 0
+            if len(a_list[d]) < max_len:
+                limit = left_list[len(a_list[d])] * (W - up)
+            move_list = []
+            temp_pop_index_list = []
+            temp_pop_list = []
+            for index, rect2i in enumerate(rect2[d]):
+                if limit >= rect2i[0]:
+                    temp_pop_index_list.append(index)
+            for index in temp_pop_index_list[::-1]:
+                temp_pop_list.append(rect2[d].pop(index))
+            temp_pop_list.sort(key=lambda x: x[0])
+            left_list_index = len(a_list[d])
+            for index in range(len(temp_pop_list) - 1, -1, -1):
+                temp_pop = temp_pop_list[index]
+                if limit > temp_pop[0]:
+                    rect2[d].append((temp_pop[0], up, left + sum(left_list[0:left_list_index]),
+                                     W, left + sum(left_list[0:left_list_index]) + left_list[left_list_index]))
+                    left_list_index += 1
+                    move_list.append(temp_pop)
+                    if left_list_index < len(left_list):
+                        limit = left_list[left_list_index] * (W - up)
+                    else:
+                        limit = 0
+                else:
+                    rect2[d].append(temp_pop)
+
+            for i in range(max_len):
                 if len(a_list[d]) - 1 - i >= 0:
-                    rect2[d].append((a_list[d][len(a_list[d]) - 1 - i], up, left, W, left + left_list[i]))
-            left += left_list[i]
+                    rect2[d].append(
+                        (a_list[d][len(a_list[d]) - 1 - i], up, left + sum(left_list[0:i]),
+                         W, left + sum(left_list[0:i]) + left_list[i]))
         break
 
     max_a = 0
