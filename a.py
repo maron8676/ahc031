@@ -302,7 +302,10 @@ while sum([len(a) for a in a_list]) > 0:
                 x_size = select_a // size
                 if select_a % size > 0:
                     x_size += 1
-                rect2[d].append((select_a, up, x, up + size, x + x_size))
+                if a_index == len(select_a_list) - 1:
+                    rect2[d].append((select_a, up, x, up + size, W))
+                else:
+                    rect2[d].append((select_a, up, x, up + size, x + x_size))
                 x += x_size
         else:
             y = up
@@ -312,7 +315,10 @@ while sum([len(a) for a in a_list]) > 0:
                 y_size = select_a // size
                 if select_a % size > 0:
                     y_size += 1
-                rect2[d].append((select_a, y, left, y + y_size, left + size))
+                if a_index == len(select_a_list) - 1:
+                    rect2[d].append((select_a, y, left, W, left + size))
+                else:
+                    rect2[d].append((select_a, y, left, y + y_size, left + size))
                 y += y_size
         del_list.sort()
         while len(del_list) > 0:
@@ -325,6 +331,88 @@ while sum([len(a) for a in a_list]) > 0:
     a.pop()
     # print()
 
+# rect2で満たしていないものがあれば、後ろから破壊して通常方式でやり直してみる
+for d in range(D):
+    satisfy = True
+    for rect_i in rect2[d]:
+        if rect_i[0] > (rect_i[3] - rect_i[1]) * (rect_i[4] - rect_i[2]):
+            satisfy = False
+
+    # １つずつ部屋を破壊してやり直す
+    # if not satisfy:
+    #     print(d, rect2[d], file=sys.stderr)
+    pop_num = 1
+    while pop_num <= N and not satisfy:
+        renewal_list = []
+        for _ in range(pop_num):
+            renewal_list.append(rect2[d].pop())
+        # print(d, pop_num, len(rect2[d]), len(renewal_list))
+        up = renewal_list[-1][1]
+        left = renewal_list[-1][2]
+        index_set = set(range(len(renewal_list)))
+
+        satisfy = True
+        for k in range(len(renewal_list)):
+            min_rem = W
+            max_index = -1
+            direction = ""
+
+            for index in index_set:
+                rem_h = (W - left) - (renewal_list[index][0] - 1) % (W - left)
+                rem_v = (W - up) - (renewal_list[index][0] - 1) % (W - up)
+
+                rem = 0
+                if W - up > 1 and rem_h < rem_v or W - left == 1:
+                    rem = rem_h
+                    if min_rem > rem:
+                        min_rem = rem
+                        max_index = index
+                        direction = "h"
+                else:
+                    rem = rem_v
+                    if min_rem > rem:
+                        max_rem = rem
+                        max_index = index
+                        direction = "v"
+
+            index_set.remove(max_index)
+
+            # print(d, len(renewal_list), up, left, file=sys.stderr)
+            if direction == "h":
+                h = renewal_list[max_index][0] // (W - left)
+                if renewal_list[max_index][0] % (W - left) != 0:
+                    h += 1
+                h = min(h, 2 * W - up - left - (len(renewal_list) - k), W - up - 1)
+                # print(h, W - left, renewal_list[max_index])
+                if k != len(renewal_list) - 1:
+                    rect2[d].append((renewal_list[max_index][0], up, left, up + h, W))
+                    if renewal_list[max_index][0] > h * (W - left):
+                        satisfy = False
+                else:
+                    rect2[d].append((renewal_list[max_index][0], up, left, W, W))
+                    # print(renewal_list[max_index], (W - up) * (W - left), file=sys.stderr)
+                    if renewal_list[max_index][0] > (W - up) * (W - left):
+                        satisfy = False
+                up += h
+            else:
+                v = renewal_list[max_index][0] // (W - up)
+                if renewal_list[max_index][0] % (W - up) != 0:
+                    v += 1
+                v = min(v, 2 * W - up - left - (len(renewal_list) - k), W - left - 1)
+                # print(v, W - up, renewal_list[max_index])
+                if k != len(renewal_list) - 1:
+                    rect2[d].append((renewal_list[max_index][0], up, left, W, left + v))
+                    if renewal_list[max_index][0] > v * (W - up):
+                        satisfy = False
+                else:
+                    rect2[d].append((renewal_list[max_index][0], up, left, W, W))
+                    # print(renewal_list[max_index], (W - up) * (W - left), file=sys.stderr)
+                    if renewal_list[max_index][0] > (W - up) * (W - left):
+                        satisfy = False
+                left += v
+
+        pop_num += 1
+
 for d in range(D):
     rect2[d].sort(key=lambda x: x[0])
     for i in range(N):
@@ -334,12 +422,12 @@ for d in range(D):
 cost1 = calc_cost(D, N, a_list_copy, rect)
 cost2 = calc_cost(D, N, a_list_copy, rect2)
 
-if cost1 < cost2:
-    for d in range(D):
-        for k in range(N):
-            i0, j0, i1, j1 = rect[d][k]
-            print(i0, j0, i1, j1)
-else:
-    for d in range(D):
-        for i in range(N):
-            print(*rect2[d][i])
+# if cost1 < cost2:
+#     for d in range(D):
+#         for k in range(N):
+#             i0, j0, i1, j1 = rect[d][k]
+#             print(i0, j0, i1, j1)
+# else:
+for d in range(D):
+    for i in range(N):
+        print(*rect2[d][i])
