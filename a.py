@@ -1,3 +1,4 @@
+import bisect
 import getpass
 import sys
 from collections import defaultdict
@@ -63,6 +64,7 @@ def calc_cost(D, N, a_list, rects_list):
         v_set = v_set_next
 
     print(cost, file=sys.stderr)
+    return cost
 
 
 is_local = getpass.getuser() == "omotl"
@@ -181,8 +183,6 @@ for d in range(D):
         else:
             max_before_index -= 1
 
-calc_cost(D, N, a_list, rect)
-
 rect2 = [[] for _ in range(D)]
 up = 0
 left = 0
@@ -197,7 +197,7 @@ while sum([len(a) for a in a_list]) > 0:
             max_i = len(a_list[d]) - 1
 
     a = a_list[max_d]
-    area = a.pop()
+    area = a[-1]
     rem_h = (W - left) - (area - 1) % (W - left)
     rem_v = (W - up) - (area - 1) % (W - up)
 
@@ -208,6 +208,7 @@ while sum([len(a) for a in a_list]) > 0:
     else:
         rem = rem_v
         direction = "v"
+    max_len = max([len(ai) for ai in a_list])
 
     size = 0
     limit = 0
@@ -215,7 +216,7 @@ while sum([len(a) for a in a_list]) > 0:
         h = area // (W - left)
         if area % (W - left) != 0:
             h += 1
-        h = min(h, 2 * W - up - left - len(a) - 1, W - up - 1)
+        h = min(h, 2 * W - up - left - max_len - 1, W - up - 1)
         rect2[max_d].append((area, up, left, up + h, W))
 
         size = h
@@ -224,49 +225,84 @@ while sum([len(a) for a in a_list]) > 0:
         v = area // (W - up)
         if area % (W - up) != 0:
             v += 1
-        v = min(v, 2 * W - up - left - len(a) - 1, W - left - 1)
+        v = min(v, 2 * W - up - left - max_len - 1, W - left - 1)
         rect2[max_d].append((area, up, left, W, left + v))
 
         size = v
         limit = (W - up) * v
 
     # 他の日の分を同じ位置に詰める
-    print(limit)
-    print("alist", a_list)
+    # print(max_d, limit, size, direction, up, left)
+    # print("alist", a_list)
     for d in range(D):
         if d == max_d:
             continue
         ad = a_list[d]
+        if len(ad) == 0:
+            continue
 
-        dp = [[False] * min(15, len(ad) + 1) for _ in range(limit + 1)]
-        dp[0][0] = True
+        dp_len = min(19, len(ad) + 1)
 
-        for i in range(1, len(dp[0])):
-            aa = ad[i - 1 + (len(ad) + 1 - len(dp[0]))] // size * size
-            if ad[i - 1 + (len(ad) + 1 - len(dp[0]))] % size > 0:
+        # dp = [[False] * dp_len for _ in range(limit + 1)]
+        # dp[0][0] = True
+
+        dp2 = [set() for _ in range(dp_len)]
+        dp2[0] = {0}
+
+        for i in range(1, dp_len):
+            aa = ad[i - 1 + (len(ad) + 1 - dp_len)] // size * size
+            if ad[i - 1 + (len(ad) + 1 - dp_len)] % size > 0:
                 aa += size
-            for j in range(limit + 1):
-                if dp[j][i - 1]:
-                    dp[j][i] = True
-                    if j + aa < limit + 1:
-                        dp[j + aa][i] = True
+            # for j in range(limit + 1):
+            #     if dp[j][i - 1]:
+            #         dp[j][i] = True
+            #         if j + aa < limit + 1:
+            #             dp[j + aa][i] = True
+            for dp_area in dp2[i - 1]:
+                dp2[i].add(dp_area)
+                dp2[i].add(dp_area + aa)
 
         dp_sum = 0
-        for i in range(limit, -1, -1):
-            if dp[i][-1]:
-                dp_sum = i
-                break
-        print(dp_sum)
+        # for i in range(limit, -1, -1):
+        #     if dp[i][-1]:
+        #         dp_sum = i
+        #         break
+        dp2_list = list(dp2[dp_len - 1])
+        dp2_list.sort()
+        b_index = bisect.bisect_left(dp2_list, limit)
+        if b_index >= len(dp2_list) or dp2_list[b_index] > limit:
+            b_index -= 1
+        dp_sum = dp2_list[b_index]
+        # print(dp_sum)
 
         select_a_list = []
-        for i in range(len(dp[0]) - 1, 0, -1):
-            aa = ad[len(ad) + 1 - len(dp[0]) + i - 1] // size * size
-            if ad[len(ad) + 1 - len(dp[0]) + i - 1] % size > 0:
+        select_a_list2 = []
+        for i in range(dp_len - 1, 0, -1):
+            aa = ad[len(ad) + 1 - dp_len + i - 1] // size * size
+            if ad[len(ad) + 1 - dp_len + i - 1] % size > 0:
                 aa += size
-            if dp_sum - aa >= 0 and dp[dp_sum - aa][i - 1]:
-                select_a_list.append(ad[len(ad) + 1 - len(dp[0]) + i - 1])
+            # if dp_sum - aa >= 0 and dp[dp_sum - aa][i - 1]:
+            #     select_a_list.append(ad[len(ad) + 1 - dp_len + i - 1])
+            #     dp_sum -= aa
+            if dp_sum - aa >= 0 and dp_sum - aa in dp2[i - 1]:
+                select_a_list.append(ad[len(ad) + 1 - dp_len + i - 1])
                 dp_sum -= aa
-        print(select_a_list)
+        # print(select_a_list)
+        if len(select_a_list) == 0:
+            rem_a = ad.pop()
+            if direction == "h":
+                rem_h2 = rem_a // (W - left)
+                if rem_a % (W - left) != 0:
+                    rem_h2 += 1
+                rem_h2 = min(rem_h2, 2 * W - up - left - max_len - 1, W - up - 1)
+                rect2[d].append((rem_a, up, left, up + rem_h2, W))
+            else:
+                rem_v2 = rem_a // (W - up)
+                if rem_a % (W - up) != 0:
+                    rem_v2 += 1
+                rem_v2 = min(rem_v2, 2 * W - up - left - max_len - 1, W - left - 1)
+                rect2[d].append((rem_a, up, left, W, left + rem_v2))
+
         del_list = []
         if direction == "h":
             x = left
@@ -296,20 +332,24 @@ while sum([len(a) for a in a_list]) > 0:
         up += size
     else:
         left += size
+    a.pop()
+    # print()
 
-# output
-for d in range(D):
-    for k in range(N):
-        i0, j0, i1, j1 = rect[d][k]
-        print(i0, j0, i1, j1)
-
-print()
 for d in range(D):
     rect2[d].sort(key=lambda x: x[0])
     for i in range(N):
         rect2[d][i] = (rect2[d][i][1], rect2[d][i][2], rect2[d][i][3], rect2[d][i][4])
 
-calc_cost(D, N, a_list_copy, rect2)
-for d in range(D):
-    for i in range(N):
-        print(*rect2[d][i])
+# output
+cost1 = calc_cost(D, N, a_list_copy, rect)
+cost2 = calc_cost(D, N, a_list_copy, rect2)
+
+if cost1 < cost2:
+    for d in range(D):
+        for k in range(N):
+            i0, j0, i1, j1 = rect[d][k]
+            print(i0, j0, i1, j1)
+else:
+    for d in range(D):
+        for i in range(N):
+            print(*rect2[d][i])
