@@ -204,7 +204,11 @@ while sum([len(a) for a in a_list]) > 0:
                     max_h = h
         up_list.append(max_h)
     if up + sum(up_list) <= W:
+        if up + sum(up_list) < W:
+            up_list[-1] = W - up - sum(up_list[:-1])
+        up_list.sort(reverse=True)
         print("h ok", file=sys.stderr)
+
         for d in range(D):
             limit = 0
             if len(a_list[d]) < max_len:
@@ -309,6 +313,9 @@ while sum([len(a) for a in a_list]) > 0:
                     max_v = v
         left_list.append(max_v)
     if left + sum(left_list) <= W:
+        if left + sum(left_list) < W:
+            left_list[-1] = W - left - sum(left_list[:-1])
+        left_list.sort(reverse=True)
         print("v ok", file=sys.stderr)
         for d in range(D):
             limit = 0
