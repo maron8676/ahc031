@@ -233,6 +233,63 @@ while sum([len(a) for a in a_list]) > 0:
                 else:
                     rect2[d].append(temp_pop)
 
+            # 移動した分を拡張
+            move_index = -1
+            not_found_num = 0
+            while len(move_list) > 0:
+                move_index = (move_index + 1) % len(move_list)
+                moved_rect = move_list[move_index]
+                found = False
+                for rect_i in range(len(rect2[d])):
+                    # 左端と右端が同じで、上端か下端が隣接している
+                    if moved_rect[2] == rect2[d][rect_i][2] and moved_rect[4] == rect2[d][rect_i][4]:
+                        if moved_rect[1] == rect2[d][rect_i][3]:
+                            # 下に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1], rect2[d][rect_i][2],
+                                                rect2[d][rect_i][3] + (moved_rect[3] - moved_rect[1]),
+                                                rect2[d][rect_i][4])
+                            found = True
+                            not_found_num = 0
+                            move_list.pop(move_index)
+                            break
+                        elif moved_rect[3] == rect2[d][rect_i][1]:
+                            # 上に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1] - (moved_rect[3] - moved_rect[1]),
+                                                rect2[d][rect_i][2],
+                                                rect2[d][rect_i][3], rect2[d][rect_i][4])
+                            found = True
+                            not_found_num = 0
+                            move_list.pop(move_index)
+                            break
+                    # 上端と下端が同じで、左端か右端が隣接している
+                    if moved_rect[1] == rect2[d][rect_i][1] and moved_rect[3] == rect2[d][rect_i][3]:
+                        if moved_rect[2] == rect2[d][rect_i][4]:
+                            # 右に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1], rect2[d][rect_i][2],
+                                                rect2[d][rect_i][3],
+                                                rect2[d][rect_i][4] + (moved_rect[4] - moved_rect[2]))
+                            found = True
+                            not_found_num = 0
+                            move_list.pop(move_index)
+                            break
+                        elif moved_rect[4] == rect2[d][rect_i][2]:
+                            # 左に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1],
+                                                rect2[d][rect_i][2] - (moved_rect[4] - moved_rect[2]),
+                                                rect2[d][rect_i][3], rect2[d][rect_i][4])
+                            found = True
+                            not_found_num = 0
+                            move_list.pop(move_index)
+                            break
+                if not found:
+                    not_found_num += 1
+                    if not_found_num >= len(move_list):
+                        break
+
             for i in range(max_len):
                 if len(a_list[d]) - 1 - i >= 0:
                     rect2[d].append((a_list[d][len(a_list[d]) - 1 - i], up + sum(up_list[0:i]), left,
@@ -280,6 +337,63 @@ while sum([len(a) for a in a_list]) > 0:
                         limit = 0
                 else:
                     rect2[d].append(temp_pop)
+
+            # 移動した分を拡張
+            move_index = -1
+            not_found_num = 0
+            while len(move_list) > 0:
+                move_index = (move_index + 1) % len(move_list)
+                moved_rect = move_list[move_index]
+                found = False
+                for rect_i in range(len(rect2[d])):
+                    # 左端と右端が同じで、上端か下端が隣接している
+                    if moved_rect[2] == rect2[d][rect_i][2] and moved_rect[4] == rect2[d][rect_i][4]:
+                        if moved_rect[1] == rect2[d][rect_i][3]:
+                            # 下に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1], rect2[d][rect_i][2],
+                                                rect2[d][rect_i][3] + (moved_rect[3] - moved_rect[1]),
+                                                rect2[d][rect_i][4])
+                            found = True
+                            move_list.pop(move_index)
+                            not_found_num = 0
+                            break
+                        elif moved_rect[3] == rect2[d][rect_i][1]:
+                            # 上に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1] - (moved_rect[3] - moved_rect[1]),
+                                                rect2[d][rect_i][2],
+                                                rect2[d][rect_i][3], rect2[d][rect_i][4])
+                            found = True
+                            move_list.pop(move_index)
+                            not_found_num = 0
+                            break
+                    # 上端と下端が同じで、左端か右端が隣接している
+                    if moved_rect[1] == rect2[d][rect_i][1] and moved_rect[3] == rect2[d][rect_i][3]:
+                        if moved_rect[2] == rect2[d][rect_i][4]:
+                            # 右に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1], rect2[d][rect_i][2],
+                                                rect2[d][rect_i][3],
+                                                rect2[d][rect_i][4] + (moved_rect[4] - moved_rect[2]))
+                            found = True
+                            move_list.pop(move_index)
+                            not_found_num = 0
+                            break
+                        elif moved_rect[4] == rect2[d][rect_i][2]:
+                            # 左に伸ばす
+                            rect2[d][rect_i] = (rect2[d][rect_i][0],
+                                                rect2[d][rect_i][1],
+                                                rect2[d][rect_i][2] - (moved_rect[4] - moved_rect[2]),
+                                                rect2[d][rect_i][3], rect2[d][rect_i][4])
+                            found = True
+                            move_list.pop(move_index)
+                            not_found_num = 0
+                            break
+                if not found:
+                    not_found_num += 1
+                    if not_found_num >= len(move_list):
+                        break
 
             for i in range(max_len):
                 if len(a_list[d]) - 1 - i >= 0:
